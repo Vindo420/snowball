@@ -1,0 +1,218 @@
+// Snowball data model.
+// Using Supabase Postgres. DATABASE_URL is the pooled connection the app uses
+// day-to-day; DIRECT_URL is the unpooled connection Prisma needs for
+// migrations (db push / migrate). Both come from your Supabase project's
+// "Connect" dialog.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+// ---------- Auth / account owners ----------
+
+model User {
+  id            String     @id @default(cuid())
+  email         String     @unique
+  name          String?
+  passwordHash  String?
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  campaigns     Campaign[]
+}
+
+// ---------- Campaigns ----------
+
+enum CampaignType {
+  SWEEPSTAKES // point-based competition for a prize
+  REWARDS     // lead-gen giveaway, unlock rewards by referring
+  WAITLIST    // pre-launch waiting list with queue-jump referrals
+  MILESTONE   // evergreen, always-on referral program
+  CUSTOM
+}
+
+enum CampaignStatus {
+  DRAFT
+  ACTIVE
+  PAUSED
+  ENDED
+}
+
+enum DisplayMode {
+  LANDING_PAGE
+  EMBED
+  POPUP
+  POPOVER
+}
+
+model Campaign {
+  id                String         @id @default(cuid())
+  userId            String
+  user              User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  slug              String         @unique // public URL: /c/[slug]
+  name              String
+  type              CampaignType   @default(REWARDS)
+  status            CampaignStatus @default(DRAFT)
+  displayMode       DisplayMode    @default(LANDING_PAGE)
+
+  headline          String?
+  description       String?
+  prizeDescription  String?
+
+  // Drag-and-drop page config: sections, colors, images, copy.
+  // Kept as freeform JSON so the page builder can evolve without migrations.
+  pageConfig        Json?
+
+  startsAt          DateTime?
+  endsAt            DateTime?
+
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+
+  participants      Participant[]
+  rewardTiers       RewardTier[]
+  integrations      Integration[]
+  referrals         Referral[]
+
+  @@index([userId])
+}
+
+// ---------- Participants & referrals ----------
+
+enum ParticipantStatus {
+  PENDING      // signed up, not yet verified (e.g. double opt-in)
+  VERIFIED
+  DISQUALIFIED // removed for fraud / abuse
+}
+
+model Participant {
+  id                String            @id @default(cuid())
+  campaignId        String
+  campaign          Campaign          @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  email             String
+  name              String?
+
+  // The code embedded in this participant's personal share link: /c/[slug]?ref=CODE
+  refCode           String            @unique
+
+  // Who referred this participant in (nullable = organic / direct signup)
+  referredById      String?
+  referredBy        Participant?      @relation("ParticipantReferrals", fields: [referredById], references: [id])
+  referredParticipants Participant[]  @relation("ParticipantReferrals")
+
+  points            Int               @default(0)
+  referralCount     Int               @default(0)
+  status            ParticipantStatus @default(PENDING)
+
+  ipAddress         String?
+  userAgent         String?
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  referralsMade     Referral[]        @relation("ReferralsMade")
+  referralsReceived Referral[]        @relation("ReferralsReceived")
+  rewardsUnlocked   ParticipantReward[]
+
+  @@unique([campaignId, email])
+  @@index([campaignId, points])
+  @@index([campaignId, referralCount])
+}
+
+enum ReferralChannel {
+  LINK
+  FACEBOOK
+  TWITTER_X
+  INSTAGRAM_STORY
+  WHATSAPP
+  EMAIL
+  SMS
+  OTHER
+}
+
+model Referral {
+  id              String          @id @default(cuid())
+  campaignId      String
+  campaign        Campaign        @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  referrerId      String
+  referrer        Participant     @relation("ReferralsMade", fields: [referrerId], references: [id], onDelete: Cascade)
+
+  // Null until the click converts into a signup.
+  refereeId       String?
+  referee         Participant?    @relation("ReferralsReceived", fields: [refereeId], references: [id])
+
+  channel         ReferralChannel @default(LINK)
+
+  // Fraud signals (see src/lib/fraud.ts)
+  isFraudFlagged  Boolean         @default(false)
+  fraudReason     String?
+
+  createdAt       DateTime        @default(now())
+
+  @@index([campaignId, referrerId])
+}
+
+// ---------- Rewards ----------
+
+model RewardTier {
+  id                 String              @id @default(cuid())
+  campaignId         String
+  campaign           Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  name               String
+  referralsRequired  Int
+  rewardDescription  String
+  autoDeliver        Boolean             @default(false)
+
+  createdAt          DateTime            @default(now())
+
+  unlocks            ParticipantReward[]
+
+  @@index([campaignId, referralsRequired])
+}
+
+model ParticipantReward {
+  id             String      @id @default(cuid())
+  participantId  String
+  participant    Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  rewardTierId   String
+  rewardTier     RewardTier  @relation(fields: [rewardTierId], references: [id], onDelete: Cascade)
+
+  unlockedAt     DateTime    @default(now())
+  deliveredAt    DateTime?
+
+  @@unique([participantId, rewardTierId])
+}
+
+// ---------- Integrations ----------
+
+enum IntegrationProvider {
+  MAILCHIMP
+  ACTIVE_CAMPAIGN
+  HUBSPOT
+  CONVERTKIT
+  WEBHOOK // generic outbound webhook, e.g. Zapier / Pabbly Connect
+}
+
+model Integration {
+  id          String              @id @default(cuid())
+  campaignId  String
+  campaign    Campaign            @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  provider    IntegrationProvider
+  // Provider-specific config (list/tag IDs, webhook URL, etc).
+  // NOTE: for real API keys, store a reference to a secret manager, not the raw key, in production.
+  config      Json
+
+  createdAt   DateTime            @default(now())
+
+  @@index([campaignId])
+}

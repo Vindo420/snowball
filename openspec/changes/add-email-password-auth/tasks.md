@@ -1,20 +1,20 @@
 ## 1. Auth foundation
 
-- [ ] 1.1 Add `src/lib/auth.ts` exporting `authOptions` (Credentials provider verifying email/password against `User.passwordHash` via `bcryptjs.compare`, JWT session strategy, JWT callback embedding `user.id`, custom `/login` page) and verify it type-checks (`npm run typecheck`)
-- [ ] 1.2 Add `src/app/api/auth/[...nextauth]/route.ts` exporting the NextAuth handler built from `authOptions`, and verify `GET/POST /api/auth/session` responds without error when the dev server is running
-- [ ] 1.3 Wrap `src/app/layout.tsx` in a `SessionProvider` client wrapper and verify the app still renders (`npm run dev`, load `/`)
+- [x] 1.1 Add `src/lib/auth.ts` exporting `authOptions` (Credentials provider verifying email/password against `User.passwordHash` via `bcryptjs.compare`, JWT session strategy, JWT callback embedding `user.id`, custom `/login` page) and verify it type-checks (`npm run typecheck`)
+- [x] 1.2 Add `src/app/api/auth/[...nextauth]/route.ts` exporting the NextAuth handler built from `authOptions`, and verify `GET/POST /api/auth/session` responds without error when the dev server is running
+- [x] 1.3 Wrap `src/app/layout.tsx` in a `SessionProvider` client wrapper and verify the app still renders (`npm run dev`, load `/`)
 
 ## 2. Signup and login UI
 
-- [ ] 2.1 Add `POST /api/signup` (kept out of `/api/auth/*`, which is reserved for NextAuth's own `[...nextauth]` catch-all route) that validates email + password (min 8 chars) with Zod, rejects duplicate emails, hashes the password with `bcryptjs` (cost 10), and creates the `User`; verify with a duplicate-email request returning an error and a valid request creating a row (`npm run db:studio` or a quick script)
-- [ ] 2.2 Add a `/signup` page with an email/password form calling the signup endpoint and then signing the user in; verify by signing up a new account through the browser and landing on `/dashboard`
-- [ ] 2.3 Add a `/login` page with an email/password form calling NextAuth's `signIn('credentials', ...)`; verify a correct email/password logs in and reaches `/dashboard`, and wrong credentials show an error without redirecting
-- [ ] 2.4 Add a logout action/button (NextAuth `signOut()`) reachable from the dashboard; verify clicking it clears the session and a subsequent `/dashboard` request redirects to `/login`
+- [x] 2.1 Add `POST /api/signup` (kept out of `/api/auth/*`, which is reserved for NextAuth's own `[...nextauth]` catch-all route) that validates email + password (min 8 chars) with Zod, rejects duplicate emails, hashes the password with `bcryptjs` (cost 10), and creates the `User`; verify with a duplicate-email request returning an error and a valid request creating a row (`npm run db:studio` or a quick script)
+- [x] 2.2 Add a `/signup` page with an email/password form calling the signup endpoint and then signing the user in; verify by signing up a new account through the browser and landing on `/dashboard`
+- [x] 2.3 Add a `/login` page with an email/password form calling NextAuth's `signIn('credentials', ...)`; verify a correct email/password logs in and reaches `/dashboard`, and wrong credentials show an error without redirecting
+- [x] 2.4 Add a logout action/button (NextAuth `signOut()`) reachable from the dashboard; verify clicking it clears the session and a subsequent `/dashboard` request redirects to `/login`
 
 ## 3. Protect dashboard routes
 
-- [ ] 3.1 Add `src/middleware.ts` using NextAuth's `withAuth`, matched to `/dashboard/:path*`, redirecting unauthenticated requests to `/login`; verify by requesting `/dashboard` while logged out (browser redirects to `/login`) and while logged in (page renders)
-- [ ] 3.2 Verify the middleware matcher does not affect public routes: request `/c/[slug]` and `POST /api/referrals` while logged out and confirm both succeed exactly as before this change (no redirect, no 401)
+- [x] 3.1 Add `src/middleware.ts` using NextAuth's `withAuth`, matched to `/dashboard/:path*`, redirecting unauthenticated requests to `/login`; verify by requesting `/dashboard` while logged out (browser redirects to `/login`) and while logged in (page renders)
+- [x] 3.2 Verify the middleware matcher does not affect public routes: request `/c/[slug]` and `POST /api/referrals` while logged out and confirm both succeed exactly as before this change (no redirect, no 401)
 
 ## 4. Replace hardcoded demo user lookups
 

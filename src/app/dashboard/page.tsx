@@ -1,29 +1,18 @@
 import Link from 'next/link';
+import { redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
-
-// TODO: replace with the real authenticated user once NextAuth is wired up.
-// For now the scaffold reads the seeded demo user so the dashboard has data
-// to show immediately after `npm run db:seed`.
-async function getDemoUser() {
-  return db.user.findUnique({ where: { email: 'demo@snowball.dev' } });
-}
+import { LogoutButton } from '@/components/LogoutButton';
 
 export default async function DashboardPage() {
-  const user = await getDemoUser();
-
-  if (!user) {
-    return (
-      <main className="mx-auto max-w-2xl px-6 py-16 text-center">
-        <p className="text-gray-600">
-          No demo user found yet. Run <code className="rounded bg-gray-100 px-1">npm run db:seed</code> and
-          reload this page.
-        </p>
-      </main>
-    );
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    redirect('/login');
   }
 
   const campaigns = await db.campaign.findMany({
-    where: { userId: user.id },
+    where: { userId: session.user.id },
     orderBy: { createdAt: 'desc' },
     include: { _count: { select: { participants: true } } },
   });
@@ -32,12 +21,15 @@ export default async function DashboardPage() {
     <main className="mx-auto max-w-4xl px-6 py-12">
       <div className="mb-8 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Your campaigns</h1>
-        <Link
-          href="/dashboard/campaigns/new"
-          className="rounded-lg bg-brand-600 px-4 py-2 font-medium text-white hover:bg-brand-700"
-        >
-          + New campaign
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link
+            href="/dashboard/campaigns/new"
+            className="rounded-lg bg-brand-600 px-4 py-2 font-medium text-white hover:bg-brand-700"
+          >
+            + New campaign
+          </Link>
+          <LogoutButton />
+        </div>
       </div>
 
       <div className="divide-y divide-gray-200 rounded-lg border border-gray-200 bg-white">

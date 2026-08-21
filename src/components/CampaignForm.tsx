@@ -11,7 +11,7 @@ const DISPLAY_MODES = ['LANDING_PAGE', 'EMBED', 'POPUP', 'POPOVER'] as const;
  * page builder — today it's a plain form; the natural next step is to make
  * `pageConfig` editable here (sections, colors, copy) with a live preview.
  */
-export function CampaignForm({ userId }: { userId: string }) {
+export function CampaignForm() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,7 +23,6 @@ export function CampaignForm({ userId }: { userId: string }) {
 
     const form = new FormData(e.currentTarget);
     const payload = {
-      userId,
       name: String(form.get('name')),
       slug: String(form.get('slug')),
       type: String(form.get('type')),

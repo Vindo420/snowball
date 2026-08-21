@@ -18,17 +18,17 @@
 
 ## 4. Replace hardcoded demo user lookups
 
-- [ ] 4.1 Replace the `getDemoUser`/hardcoded `demo@snowball.dev` lookup in `src/app/dashboard/page.tsx` with the session user via `getServerSession(authOptions)`, and verify the dashboard lists only that logged-in user's campaigns
-- [ ] 4.2 Replace the same hardcoded lookup in `src/app/dashboard/campaigns/new/page.tsx` with the session user, and verify creating a campaign while logged in as a given user succeeds
-- [ ] 4.3 Add an ownership check to `src/app/dashboard/campaigns/[id]/page.tsx` (404/redirect if `campaign.userId !== session.user.id`), and verify a second test user cannot open the first user's campaign detail page by URL
+- [x] 4.1 Replace the `getDemoUser`/hardcoded `demo@snowball.dev` lookup in `src/app/dashboard/page.tsx` with the session user via `getServerSession(authOptions)`, and verify the dashboard lists only that logged-in user's campaigns
+- [x] 4.2 Replace the same hardcoded lookup in `src/app/dashboard/campaigns/new/page.tsx` with the session user, and verify creating a campaign while logged in as a given user succeeds
+- [x] 4.3 Add an ownership check to `src/app/dashboard/campaigns/[id]/page.tsx` (404/redirect if `campaign.userId !== session.user.id`), and verify a second test user cannot open the first user's campaign detail page by URL
 
 ## 5. Enforce ownership in the campaign API
 
-- [ ] 5.1 Update `POST /api/campaigns` to drop `userId` from the Zod input schema and set the campaign's owner from `getServerSession`; return 401 if unauthenticated; verify with a request that omits `userId` and one that tries to pass a different `userId` (both succeed and always create the campaign owned by the session user)
-- [ ] 5.2 Update `GET /api/campaigns` to drop the `userId` query param and always filter by the session user; return 401 if unauthenticated; verify a request with a different `userId` query param still only returns the caller's own campaigns
-- [ ] 5.3 Update `GET/PATCH/DELETE /api/campaigns/[id]` to require a session (401 if absent) and return 404 when `campaign.userId !== session.user.id`; verify with two seeded users that user B gets 404 on user A's campaign id for all three verbs, and user A succeeds
+- [x] 5.1 Update `POST /api/campaigns` to drop `userId` from the Zod input schema and set the campaign's owner from `getServerSession`; return 401 if unauthenticated; verify with a request that omits `userId` and one that tries to pass a different `userId` (both succeed and always create the campaign owned by the session user)
+- [x] 5.2 Update `GET /api/campaigns` to drop the `userId` query param and always filter by the session user; return 401 if unauthenticated; verify a request with a different `userId` query param still only returns the caller's own campaigns
+- [x] 5.3 Update `GET/PATCH/DELETE /api/campaigns/[id]` to require a session (401 if absent) and return 404 when `campaign.userId !== session.user.id`; verify with two seeded users that user B gets 404 on user A's campaign id for all three verbs, and user A succeeds
 
 ## 6. Verification pass
 
-- [ ] 6.1 Run `npm run typecheck` and `npm run lint` and confirm both pass
-- [ ] 6.2 Manually walk the end-to-end flow in the browser: sign up → land on dashboard (empty) → create a campaign → log out → confirm `/dashboard` redirects to `/login` → log back in → confirm the created campaign is still visible → confirm the seeded demo user (`demo@snowball.dev` / `password123`) can still log in and only sees its own seeded campaign
+- [x] 6.1 Run `npm run typecheck` and confirm it passes (`npm run lint` was skipped by user decision: this scaffold has no ESLint installed/configured yet — a pre-existing gap unrelated to this change)
+- [x] 6.2 Manually walk the end-to-end flow in the browser: sign up → land on dashboard (empty) → create a campaign → log out → confirm `/dashboard` redirects to `/login` → log back in → confirm the created campaign is still visible → confirm the seeded demo user (`demo@snowball.dev` / `password123`) can still log in and only sees its own seeded campaign

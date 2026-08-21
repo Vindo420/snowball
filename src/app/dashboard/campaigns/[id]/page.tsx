@@ -1,7 +1,15 @@
+import { redirect } from 'next/navigation';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { Leaderboard } from '@/components/Leaderboard';
 
 export default async function CampaignDetailPage({ params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    redirect('/login');
+  }
+
   const campaign = await db.campaign.findUnique({
     where: { id: params.id },
     include: {
@@ -13,7 +21,7 @@ export default async function CampaignDetailPage({ params }: { params: { id: str
     },
   });
 
-  if (!campaign) {
+  if (!campaign || campaign.userId !== session.user.id) {
     return <main className="p-12 text-center text-gray-500">Campaign not found.</main>;
   }
 

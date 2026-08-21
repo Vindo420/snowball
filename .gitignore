@@ -8,3 +8,6 @@ out/
 /prisma/dev.db
 /prisma/dev.db-journal
 _to_delete/
+
+# Build artifacts
+*.tsbuildinfo

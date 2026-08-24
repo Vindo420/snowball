@@ -107,8 +107,10 @@ See `prisma/schema.prisma` for the authoritative version.
 
 Things that are wrong or missing today, roughly by urgency:
 
-1. **No ESLint.** `npm run lint` is defined in package.json but the tooling was
-   never installed. Only `npm run typecheck` currently works.
+1. **No ESLint.** No linting is configured at all. The dead `next lint` script
+   was removed during the Next.js 16 upgrade (the command no longer exists in
+   16). Only `npm run typecheck` guards code quality today. Next 16 expects
+   ESLint's flat config format if added.
 2. **No rate limiting** on `/api/referrals` or on login/signup. The fraud checks
    in `src/lib/fraud.ts` (duplicate email, IP velocity, disposable domains) are
    a starting point, not a finished system.
@@ -116,7 +118,11 @@ Things that are wrong or missing today, roughly by urgency:
    user from before the project was renamed. It exists only in the production
    Supabase project, not in snowball-dev, so it will look "missing" from any
    local tooling. Harmless, but clean it up via the Supabase table editor.
-4. **No automated tests.** Every verification so far has been manual.
+4. **Partial test coverage.** The Playwright suite (`npm run test:e2e`) covers
+   8 end-to-end flows: signup, login, logout redirect, cross-user isolation,
+   the public campaign page, giveaway entry, referral crediting, and API auth.
+   There are no unit tests, so `src/lib/fraud.ts` and `src/lib/integrations.ts`
+   are exercised only indirectly, if at all.
 
 ## 6. Roadmap
 

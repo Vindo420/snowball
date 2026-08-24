@@ -40,7 +40,7 @@
 
 ## 8. Deploy and verify in production
 
-- [ ] 8.1 Commit all changes from this upgrade (including the SPEC.md update) and push to `main`
-- [ ] 8.2 Confirm the Vercel deployment for this push succeeds; if it fails, fix the underlying cause and re-push — a failed deploy is part of this change, not something to defer
-- [ ] 8.3 Manually check the live site at https://snowball-blue.vercel.app: the home page, the login page, and the public campaign page /c/launch-giveaway all load without error
-- [ ] 8.4 Manually confirm `/dashboard` redirects to `/login` when logged out on the live production site (not just locally); if it doesn't, fix the underlying cause before considering this change done
+- [x] 8.1 Commit all changes from this upgrade (including the SPEC.md update) and push to `main`
+- [x] 8.2 Confirm the Vercel deployment for this push succeeds; if it fails, fix the underlying cause and re-push — a failed deploy is part of this change, not something to defer
+- [x] 8.3 Manually check the live site at https://snowball-blue.vercel.app: the home page, the login page, and the public campaign page /c/launch-giveaway all load without error
+- [x] 8.4 Manually confirm `/dashboard` redirects to `/login` when logged out on the live production site (not just locally); if it doesn't, fix the underlying cause before considering this change done

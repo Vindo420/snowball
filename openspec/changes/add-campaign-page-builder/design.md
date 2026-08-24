@@ -80,16 +80,16 @@ See proposal.md - Why. Relevant constraints from the current codebase:
 2. Switch `/c/[slug]/page.tsx` to `PageRenderer` fed by `parsePageConfig(campaign.pageConfig)`; delete `CampaignLanding.tsx`.
 3. Add the new E2E test: a campaign with a legacy or null `pageConfig` still renders with a working entry form.
 4. Add a test confirming no hydration-mismatch warnings appear for a campaign with a `COUNTDOWN` section and `endsAt` set.
-5. Checkpoint: existing 8 flows + the 2 new flows (10 total) pass; typecheck; build.
+5. Checkpoint: existing 8 flows + 3 new flows (11 total — the legacy/null coverage ended up as two separate test cases) pass; typecheck; build.
 
 **Phase 3 — Dashboard editor**:
 1. Build the editor page (section list with add/remove/reorder, per-type forms, live preview) and the "Edit page" link from the detail page.
 2. Verify the live preview's entry form cannot create a real `Participant` row.
 3. Add the new E2E test: edit a section and reorder sections, then confirm the public page reflects both changes.
-4. Checkpoint: existing 8 + 3 new flows (11 total) pass; typecheck; build.
+4. Checkpoint: existing 8 + 4 new flows (12 total) pass; typecheck; build.
 
 **Phase 4 — Full verification & rollout**:
-1. Full re-run: `npm run typecheck`, `npm run build`, all 11 E2E flows.
+1. Full re-run: `npm run typecheck`, `npm run build`, all 12 E2E flows.
 2. Commit and push to `main`.
 3. Confirm the Vercel deployment succeeds.
 4. Manually verify `https://snowball-blue.vercel.app/c/launch-giveaway` renders correctly in production.

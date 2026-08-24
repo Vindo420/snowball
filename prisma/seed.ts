@@ -5,6 +5,7 @@
 import { PrismaClient, CampaignType, CampaignStatus, DisplayMode } from '@prisma/client';
 import { nanoid } from 'nanoid';
 import bcrypt from 'bcryptjs';
+import { DEFAULT_PAGE_CONFIG } from '../src/lib/pageConfig';
 
 const prisma = new PrismaClient();
 
@@ -23,7 +24,7 @@ async function main() {
 
   const campaign = await prisma.campaign.upsert({
     where: { slug: 'launch-giveaway' },
-    update: { userId: user.id },
+    update: { userId: user.id, pageConfig: DEFAULT_PAGE_CONFIG },
     create: {
       userId: user.id,
       slug: 'launch-giveaway',
@@ -34,10 +35,7 @@ async function main() {
       headline: 'Win early access + $500 in credit',
       description: 'Refer your friends to move up the list and unlock rewards.',
       prizeDescription: '$500 credit + lifetime early-adopter pricing',
-      pageConfig: {
-        theme: 'brand',
-        sections: ['hero', 'progress', 'leaderboard', 'share', 'footer'],
-      },
+      pageConfig: DEFAULT_PAGE_CONFIG,
       rewardTiers: {
         create: [
           { name: 'Bronze', referralsRequired: 1, rewardDescription: 'Exclusive Discord role', autoDeliver: true },

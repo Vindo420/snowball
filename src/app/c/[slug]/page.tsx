@@ -1,7 +1,8 @@
 import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
-import { CampaignLanding } from '@/components/CampaignLanding';
+import { parsePageConfig } from '@/lib/pageConfig';
+import { PageRenderer } from '@/components/page-builder/PageRenderer';
 
 /**
  * Public campaign page — this is the "landing page" DisplayMode. The EMBED /
@@ -21,6 +22,7 @@ export default async function PublicCampaignPage(props: { params: Promise<{ slug
   const campaign = await db.campaign.findUnique({
     where: { slug: params.slug },
     include: {
+      rewardTiers: { orderBy: { referralsRequired: 'asc' } },
       participants: {
         orderBy: [{ referralCount: 'desc' }, { points: 'desc' }],
         take: 20,
@@ -34,17 +36,22 @@ export default async function PublicCampaignPage(props: { params: Promise<{ slug
 
   // Use || not ?? so that an empty-string env var also falls back.
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const pageConfig = parsePageConfig(campaign.pageConfig);
 
   return (
-    // CampaignLanding calls useSearchParams() to read the ?ref= code, which
+    // PageRenderer calls useSearchParams() to read the ?ref= code, which
     // Next.js requires to sit inside a Suspense boundary.
     <Suspense fallback={<main className="px-6 py-16 text-center text-gray-500">Loading…</main>}>
-      <CampaignLanding
+      <PageRenderer
+        pageConfig={pageConfig}
         campaignSlug={campaign.slug}
         headline={campaign.headline}
         description={campaign.description}
         prizeDescription={campaign.prizeDescription}
         appUrl={appUrl}
+        endsAt={campaign.endsAt}
+        serverNowMs={Date.now()}
+        rewardTiers={campaign.rewardTiers}
         leaderboard={campaign.participants}
       />
     </Suspense>

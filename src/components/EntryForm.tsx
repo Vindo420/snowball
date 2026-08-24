@@ -7,20 +7,28 @@ import { useState } from 'react';
  * the participant's own refCode so the page can reveal their personal share
  * link + leaderboard position.
  */
+export type EnteredParticipant = { refCode: string; points: number; referralCount: number };
+
 export function EntryForm({
   campaignSlug,
   refCode,
   onEntered,
+  disabled,
 }: {
   campaignSlug: string;
   refCode?: string;
-  onEntered: (participantRefCode: string) => void;
+  onEntered: (participant: EnteredParticipant) => void;
+  /** When true, submission is inert — used by the page-builder editor's live preview so it can never create real data. */
+  disabled?: boolean;
 }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    if (disabled) {
+      return;
+    }
     setSubmitting(true);
     setError(null);
 
@@ -44,7 +52,7 @@ export function EntryForm({
     }
 
     const { participant } = await res.json();
-    onEntered(participant.refCode);
+    onEntered(participant);
   }
 
   return (
@@ -64,7 +72,7 @@ export function EntryForm({
       />
       <button
         type="submit"
-        disabled={submitting}
+        disabled={submitting || disabled}
         className="rounded-lg bg-brand-600 py-3 font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
       >
         {submitting ? 'Entering…' : 'Enter now'}

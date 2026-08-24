@@ -80,6 +80,8 @@ export async function POST(req: NextRequest) {
       participant: {
         id: participant.id,
         refCode: participant.refCode,
+        points: participant.points,
+        referralCount: participant.referralCount,
       },
     },
     { status: 201 }

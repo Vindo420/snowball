@@ -1,4 +1,5 @@
 import { redirect } from 'next/navigation';
+import Link from 'next/link';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
@@ -30,14 +31,22 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
 
   return (
     <main className="mx-auto max-w-4xl space-y-8 px-6 py-12">
-      <div>
-        <h1 className="text-2xl font-bold">{campaign.name}</h1>
-        <p className="text-gray-500">
-          {campaign.status} &middot; {campaign.type} &middot;{' '}
-          <a className="underline" href={`${appUrl}/c/${campaign.slug}`} target="_blank" rel="noreferrer">
-            {appUrl}/c/{campaign.slug}
-          </a>
-        </p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">{campaign.name}</h1>
+          <p className="text-gray-500">
+            {campaign.status} &middot; {campaign.type} &middot;{' '}
+            <a className="underline" href={`${appUrl}/c/${campaign.slug}`} target="_blank" rel="noreferrer">
+              {appUrl}/c/{campaign.slug}
+            </a>
+          </p>
+        </div>
+        <Link
+          href={`/dashboard/campaigns/${campaign.id}/edit`}
+          className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50"
+        >
+          Edit page
+        </Link>
       </div>
 
       <section>

@@ -94,8 +94,15 @@ See `prisma/schema.prisma` for the authoritative version.
 
 Things that are wrong or missing today, roughly by urgency:
 
-1. **Next.js 14.2.15 has a known security vulnerability.** Vercel warns about
-   this on every build. Upgrade to a patched release.
+1. **Upgrade to Next.js 16.** Now on 14.2.35, which patches the flagged
+   denial-of-service issue (CVE-2025-67779) and is the final release of the
+   14.x line. `npm audit` still reports advisories because some were only ever
+   fixed in 15.x and 16.x. Checked against this app's config: the Image
+   Optimizer, Server Actions, rewrites, i18n, and custom-server advisories do
+   not apply (none of those features are used), and the postcss ones are
+   build-time only. A few cache-poisoning items are harder to rule out. Do NOT
+   run `npm audit fix --force`, which jumps straight to 16.3.2 unplanned.
+   Schedule this as its own OpenSpec change with real testing.
 2. **Dev and production share one Supabase database.** Test data mixes with
    real data. Split into two projects (the free tier allows two) before any
    real users exist.
@@ -104,11 +111,9 @@ Things that are wrong or missing today, roughly by urgency:
 4. **No rate limiting** on `/api/referrals` or on login/signup. The fraud checks
    in `src/lib/fraud.ts` (duplicate email, IP velocity, disposable domains) are
    a starting point, not a finished system.
-5. **`/dashboard` pages attempt static prerendering at build time.** Harmless
-   today but wrong; they should be marked dynamic.
-6. **Stale row in the database**: a leftover `demo@upviral-clone.dev` user from
+5. **Stale row in the database**: a leftover `demo@upviral-clone.dev` user from
    before the project was renamed.
-7. **No automated tests.** Every verification so far has been manual.
+6. **No automated tests.** Every verification so far has been manual.
 
 ## 6. Roadmap
 

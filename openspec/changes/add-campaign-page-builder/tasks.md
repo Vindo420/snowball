@@ -37,6 +37,6 @@
 ## Phase 4 — Full verification & rollout
 
 - [x] 4.1 Run `npm run typecheck`, `npm run build`, and the full 12-flow `npm run test:e2e` suite one more time end to end and confirm everything passes
-- [ ] 4.2 Commit all changes from this feature and push to `main`
-- [ ] 4.3 Confirm the Vercel deployment for this push succeeds; if it fails, fix the underlying cause and re-push — a failed deploy is part of this change, not something to defer
-- [ ] 4.4 Manually confirm `https://snowball-blue.vercel.app/c/launch-giveaway` renders correctly in production (loads without error, shows the seeded campaign's content) — local success has not reliably predicted production success on this project
+- [x] 4.2 Commit all changes from this feature and push to `main`
+- [x] 4.3 Confirm the Vercel deployment for this push succeeds; if it fails, fix the underlying cause and re-push — a failed deploy is part of this change, not something to defer
+- [x] 4.4 Manually confirm `https://snowball-blue.vercel.app/c/launch-giveaway` renders correctly in production (loads without error, shows the seeded campaign's content) — local success has not reliably predicted production success on this project

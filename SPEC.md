@@ -86,7 +86,7 @@ See `prisma/schema.prisma` for the authoritative version.
 
 - Full Prisma schema against Supabase Postgres.
 - **Authentication**: signup, login, logout via NextAuth Credentials with JWT
-  sessions. `src/middleware.ts` protects `/dashboard/*`. Every dashboard page
+  sessions. `src/proxy.ts` protects `/dashboard/*`. Every dashboard page
   and campaign API route derives ownership from the session, never from
   client-supplied input. Verified: two accounts cannot see each other's
   campaigns.
@@ -101,6 +101,16 @@ See `prisma/schema.prisma` for the authoritative version.
   (Facebook, X, WhatsApp, Instagram Story, email, copy), live leaderboard.
 - Dashboard: list campaigns, create campaigns, view reward tiers, integrations,
   and leaderboard.
+- **Section-based page builder** at `/dashboard/campaigns/[id]/edit`: add,
+  remove, and reorder sections (up/down, not drag-and-drop) with a
+  non-interactive live preview. Four section types: HERO, LEADERBOARD,
+  REWARD_TIERS, COUNTDOWN. ENTRY_FORM is always present and cannot be removed.
+  Stored in `Campaign.pageConfig`, Zod-validated on both save and read. A null,
+  legacy, or malformed config falls back to a fixed default rather than
+  throwing. `PageRenderer` renders the public page from this config.
+- `PATCH /api/campaigns/:id` uses an allow-listed Zod schema. It previously
+  accepted an arbitrary unvalidated body, which would have let an owner rewrite
+  fields like `userId`.
 - Deployed to Vercel, auto-deploying from `main`.
 
 ## 5. Known debt
@@ -111,14 +121,14 @@ Things that are wrong or missing today, roughly by urgency:
    was removed during the Next.js 16 upgrade (the command no longer exists in
    16). Only `npm run typecheck` guards code quality today. Next 16 expects
    ESLint's flat config format if added.
-2. **No rate limiting** on `/api/referrals` or on login/signup. The fraud checks
+1. **No rate limiting** on `/api/referrals` or on login/signup. The fraud checks
    in `src/lib/fraud.ts` (duplicate email, IP velocity, disposable domains) are
    a starting point, not a finished system.
-3. **Stale row in the PRODUCTION database**: a leftover `demo@upviral-clone.dev`
+2. **Stale row in the PRODUCTION database**: a leftover `demo@upviral-clone.dev`
    user from before the project was renamed. It exists only in the production
    Supabase project, not in snowball-dev, so it will look "missing" from any
    local tooling. Harmless, but clean it up via the Supabase table editor.
-4. **Partial test coverage.** The Playwright suite (`npm run test:e2e`) covers
+3. **Partial test coverage.** The Playwright suite (`npm run test:e2e`) covers
    8 end-to-end flows: signup, login, logout redirect, cross-user isolation,
    the public campaign page, giveaway entry, referral crediting, and API auth.
    There are no unit tests, so `src/lib/fraud.ts` and `src/lib/integrations.ts`
@@ -126,33 +136,29 @@ Things that are wrong or missing today, roughly by urgency:
 
 ## 6. Roadmap
 
-1. **Drag-and-drop page builder.** `Campaign.pageConfig` already exists as a
-   JSON bag. Build a section-based editor (hero, countdown, leaderboard, share,
-   testimonials) with live preview, rendered by a matching `PageRenderer` on the
-   public page. This is the biggest differentiator versus competitors.
-2. **Embed, popup, and popover delivery.** A small `public/embed.js` that
+1. **Embed, popup, and popover delivery.** A small `public/embed.js` that
    customers paste onto their own site, injecting an iframe or modal pointed at
    `/c/[slug]` in the right `displayMode`.
-3. **Real CRM integrations.** Fill in the Mailchimp, ActiveCampaign, HubSpot,
+2. **Real CRM integrations.** Fill in the Mailchimp, ActiveCampaign, HubSpot,
    and ConvertKit stubs in `src/lib/integrations.ts` with real API calls, plus
    dashboard UI to configure API keys and list/tag mapping. The generic webhook
    path already works.
-4. **Real Instagram Story sharing.** Instagram has no web share endpoint. Real
+3. **Real Instagram Story sharing.** Instagram has no web share endpoint. Real
    support means generating a per-participant share image (for example via
    `@vercel/og` at `/api/campaigns/[id]/share-image?ref=CODE`, rendering
    something like "you're #3 on the leaderboard") and deep-linking into the app
    with it as the background. The button and deep link already exist in
    `src/components/ShareButtons.tsx`; only image generation is missing.
-5. **Per-campaign scoring rules.** Points-per-referral is hardcoded to `10` in
+4. **Per-campaign scoring rules.** Points-per-referral is hardcoded to `10` in
    `recordReferral`. Make it configurable, and consider point decay and bonus
    multipliers for parity with Upviral's Sweepstakes mode.
-6. **A/B testing.** N variants of `pageConfig`, cookie-based bucket assignment,
+5. **A/B testing.** N variants of `pageConfig`, cookie-based bucket assignment,
    and a `variant` column on Participant for reporting.
-7. **Analytics.** Conversion rate (visits to entries), K-factor (referrals per
+6. **Analytics.** Conversion rate (visits to entries), K-factor (referrals per
    participant), channel breakdown, campaign comparison.
-8. **Custom domains.** A `Domain` model, DNS verification, and middleware
+7. **Custom domains.** A `Domain` model, DNS verification, and middleware
    resolving incoming host to campaign.
-9. **Background jobs.** Move integration dispatch and reward delivery off the
+8. **Background jobs.** Move integration dispatch and reward delivery off the
    request path once volume matters.
 
 ## 7. Working method

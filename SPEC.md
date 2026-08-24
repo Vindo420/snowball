@@ -38,6 +38,18 @@ Where we intend to do better than Upviral:
 | Styling | Tailwind CSS | |
 | Hosting | Vercel | Deploys automatically on every push to `main`. |
 
+### Databases
+
+Two separate Supabase projects, deliberately isolated:
+
+- **Snowball** (project id `vklmzhscdfbqjrfbmpgb`) is **production**. Only
+  Vercel's environment variables point at it. Never point local dev here.
+- **snowball-dev** (project id `nrwqpkqdinfsjqalujuz`) is **local development**.
+  Only the local `.env` points at it.
+
+To confirm which one you are talking to, check the project id in the connection
+string. Local `.env` is git-ignored, so the split is safe to keep this way.
+
 ### Environment variables
 
 Set in `.env` locally and in Vercel's project settings for production. All five
@@ -47,7 +59,8 @@ during the first deploy.
 - `DATABASE_URL` (Supabase pooled, port 6543, ends `?pgbouncer=true`)
 - `DIRECT_URL` (Supabase direct, port 5432)
 - `NEXTAUTH_SECRET`
-- `NEXTAUTH_URL` (full https URL, no trailing slash)
+- `NEXTAUTH_URL` (full https URL in production, no trailing slash;
+  `http://localhost:3001` locally, since port 3000 is taken by another project)
 - `NEXT_PUBLIC_APP_URL` (same value; **builds every referral share link**, so a
   wrong value here silently breaks the core product)
 
@@ -103,17 +116,14 @@ Things that are wrong or missing today, roughly by urgency:
    build-time only. A few cache-poisoning items are harder to rule out. Do NOT
    run `npm audit fix --force`, which jumps straight to 16.3.2 unplanned.
    Schedule this as its own OpenSpec change with real testing.
-2. **Dev and production share one Supabase database.** Test data mixes with
-   real data. Split into two projects (the free tier allows two) before any
-   real users exist.
-3. **No ESLint.** `npm run lint` is defined in package.json but the tooling was
+2. **No ESLint.** `npm run lint` is defined in package.json but the tooling was
    never installed. Only `npm run typecheck` currently works.
-4. **No rate limiting** on `/api/referrals` or on login/signup. The fraud checks
+3. **No rate limiting** on `/api/referrals` or on login/signup. The fraud checks
    in `src/lib/fraud.ts` (duplicate email, IP velocity, disposable domains) are
    a starting point, not a finished system.
-5. **Stale row in the database**: a leftover `demo@upviral-clone.dev` user from
+4. **Stale row in the database**: a leftover `demo@upviral-clone.dev` user from
    before the project was renamed.
-6. **No automated tests.** Every verification so far has been manual.
+5. **No automated tests.** Every verification so far has been manual.
 
 ## 6. Roadmap
 

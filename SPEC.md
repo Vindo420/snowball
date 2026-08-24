@@ -30,7 +30,7 @@ Where we intend to do better than Upviral:
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Framework | Next.js 14 (App Router) | One codebase for marketing site, dashboard, public campaign pages, and API. |
+| Framework | Next.js 16 (App Router), React 19 | One codebase for marketing site, dashboard, public campaign pages, and API. |
 | Language | TypeScript | Zod validates the same shapes at runtime. |
 | Database | Supabase Postgres | Pooled connection (port 6543) for the app, direct (5432) for migrations. |
 | ORM | Prisma | Type-safe queries plus a GUI via `npm run db:studio`. |
@@ -107,25 +107,16 @@ See `prisma/schema.prisma` for the authoritative version.
 
 Things that are wrong or missing today, roughly by urgency:
 
-1. **Upgrade to Next.js 16.** Now on 14.2.35, which patches the flagged
-   denial-of-service issue (CVE-2025-67779) and is the final release of the
-   14.x line. `npm audit` still reports advisories because some were only ever
-   fixed in 15.x and 16.x. Checked against this app's config: the Image
-   Optimizer, Server Actions, rewrites, i18n, and custom-server advisories do
-   not apply (none of those features are used), and the postcss ones are
-   build-time only. A few cache-poisoning items are harder to rule out. Do NOT
-   run `npm audit fix --force`, which jumps straight to 16.3.2 unplanned.
-   Schedule this as its own OpenSpec change with real testing.
-2. **No ESLint.** `npm run lint` is defined in package.json but the tooling was
+1. **No ESLint.** `npm run lint` is defined in package.json but the tooling was
    never installed. Only `npm run typecheck` currently works.
-3. **No rate limiting** on `/api/referrals` or on login/signup. The fraud checks
+2. **No rate limiting** on `/api/referrals` or on login/signup. The fraud checks
    in `src/lib/fraud.ts` (duplicate email, IP velocity, disposable domains) are
    a starting point, not a finished system.
-4. **Stale row in the PRODUCTION database**: a leftover `demo@upviral-clone.dev`
+3. **Stale row in the PRODUCTION database**: a leftover `demo@upviral-clone.dev`
    user from before the project was renamed. It exists only in the production
    Supabase project, not in snowball-dev, so it will look "missing" from any
    local tooling. Harmless, but clean it up via the Supabase table editor.
-5. **No automated tests.** Every verification so far has been manual.
+4. **No automated tests.** Every verification so far has been manual.
 
 ## 6. Roadmap
 

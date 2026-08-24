@@ -16,7 +16,8 @@ import { CampaignLanding } from '@/components/CampaignLanding';
 // so this page must never be served from a build-time cache.
 export const dynamic = 'force-dynamic';
 
-export default async function PublicCampaignPage({ params }: { params: { slug: string } }) {
+export default async function PublicCampaignPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const campaign = await db.campaign.findUnique({
     where: { slug: params.slug },
     include: {

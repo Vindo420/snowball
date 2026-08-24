@@ -6,11 +6,12 @@ import { NextRequest, NextResponse } from 'next/server';
  * just logs the payload; add signature verification per-provider before
  * trusting anything here in production.
  */
-export async function POST(req: NextRequest, { params }: { params: { provider: string } }) {
-  const payload = await req.json().catch(() => null);
-  console.log(`[webhook:${params.provider}] received`, payload);
+export async function POST(req: NextRequest, props: { params: Promise<{ provider: string }> }) {
+ const params = await props.params;
+ const payload = await req.json().catch(() => null);
+ console.log(`[webhook:${params.provider}] received`, payload);
 
-  // TODO: verify signature (e.g. Mailchimp's X-Mandrill-Signature) before acting on payload.
+ // TODO: verify signature (e.g. Mailchimp's X-Mandrill-Signature) before acting on payload.
 
-  return NextResponse.json({ ok: true });
+ return NextResponse.json({ ok: true });
 }

@@ -15,3 +15,5 @@ _to_delete/
 # Playwright
 /test-results/
 /playwright-report/
+# next-agents-md
+.next-docs/

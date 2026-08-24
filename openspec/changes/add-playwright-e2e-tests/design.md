@@ -41,6 +41,10 @@ See proposal.md - Why. Relevant constraints from the current codebase:
 
 **Cross-user tests (flow #4) use two independent Playwright browser contexts** (not two tabs in one context), so each has its own cookie jar / session — matching how two real users would never share a session.
 
+**Worker count capped at 2 (`workers: 2`), not Playwright's default (per-CPU) count.**
+- Why: discovered during implementation — the dev server is a single `next dev` process talking to a remote Supabase DB, with a `bcrypt` hash per signup/login. Running signup-heavy tests at Playwright's default worker count (matching CPU cores) overwhelmed that single process and caused request timeouts unrelated to test correctness or data races (`fullyParallel: true`'s "safe by construction" reasoning above covers data collisions, not server throughput). `workers: 1` (fully serial) also works but a plain `workers: 2` keeps some parallelism while staying reliable.
+- Alternative considered: switch `webServer` to a production build (`next build && next start`), which handles concurrent requests better and would allow full default parallelism. Rejected for now — slower to start (adds a build step) and a bigger deviation from the "auto-start the dev server" decision above; revisit if suite runtime becomes a real pain point.
+
 ## Risks / Trade-offs
 
 - **[Risk]** Tests run against the real `snowball-dev` database, so a bug in a test's cleanup step leaves orphaned rows there → **Mitigation**: the `e2e-` slug prefix and `@e2e.test` email suffix make orphaned rows trivially identifiable and safe to bulk-delete later; `afterEach` cleanup runs even on test failure (Playwright always runs `afterEach`/`afterAll` hooks).

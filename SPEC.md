@@ -121,8 +121,10 @@ Things that are wrong or missing today, roughly by urgency:
 3. **No rate limiting** on `/api/referrals` or on login/signup. The fraud checks
    in `src/lib/fraud.ts` (duplicate email, IP velocity, disposable domains) are
    a starting point, not a finished system.
-4. **Stale row in the database**: a leftover `demo@upviral-clone.dev` user from
-   before the project was renamed.
+4. **Stale row in the PRODUCTION database**: a leftover `demo@upviral-clone.dev`
+   user from before the project was renamed. It exists only in the production
+   Supabase project, not in snowball-dev, so it will look "missing" from any
+   local tooling. Harmless, but clean it up via the Supabase table editor.
 5. **No automated tests.** Every verification so far has been manual.
 
 ## 6. Roadmap

@@ -11,3 +11,7 @@ _to_delete/
 
 # Build artifacts
 *.tsbuildinfo
+
+# Playwright
+/test-results/
+/playwright-report/

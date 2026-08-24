@@ -66,3 +66,33 @@ datasource db {
 
 Point `DATABASE_URL` in `.env` at your Postgres instance, then run
 `npm run db:push` (or set up proper migrations with `npm run db:migrate`).
+
+## Running the E2E tests
+
+An automated [Playwright](https://playwright.dev/) suite covers the auth,
+campaign-ownership, and public referral flows end-to-end, so you don't have
+to click through the app by hand to check they still work.
+
+**Prerequisites:**
+- `.env` configured with a working `DATABASE_URL`/`DIRECT_URL` (the suite
+  runs against your local dev database — see the guard note below).
+- Playwright's browser binaries installed once: `npx playwright install --with-deps chromium`.
+
+**Run it:**
+
+```bash
+npm run test:e2e
+```
+
+That's the whole command — Playwright starts the dev server for you (on
+port 3001, matching `NEXTAUTH_URL`) if one isn't already running, or reuses
+one you already have open.
+
+Notes:
+- Every test creates its own uniquely-named user/campaign/participant data
+  (an `e2e-<random>` slug prefix, an `@e2e.test` email suffix) and deletes
+  it afterward, so repeated runs never collide or leave junk behind — safe
+  to run against the same database you use for local development.
+- A guard refuses to run any test at all if `DATABASE_URL`/`DIRECT_URL`
+  resolves to the production Supabase project — these tests create and
+  delete real rows and must never touch production data.

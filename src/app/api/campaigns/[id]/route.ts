@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { PageConfigSchema } from '@/lib/pageConfig';
+import { PageConfigWithEntryFormSchema, PageDraftEnvelopeSchema } from '@/lib/pageConfig';
 
 // Explicit allow-list for PATCH — replaces trusting an arbitrary request body.
 // `status` must stay accepted: e2e/helpers/campaign.ts's activateCampaign depends on it.
@@ -22,10 +22,8 @@ const updateCampaignSchema = z
     description: z.string().optional(),
     prizeDescription: z.string().optional(),
     endsAt: z.coerce.date().nullable().optional(),
-    pageConfig: PageConfigSchema.refine(
-      (config) => config.sections.some((section) => section.type === 'ENTRY_FORM'),
-      { message: 'pageConfig.sections must include an ENTRY_FORM section' }
-    ).optional(),
+    pageConfig: PageConfigWithEntryFormSchema.optional(),
+    pageConfigDraft: PageDraftEnvelopeSchema.optional(),
   })
   .strict();
 

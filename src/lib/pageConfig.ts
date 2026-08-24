@@ -42,11 +42,25 @@ export const SectionSchema = z.discriminatedUnion('type', [
 export type Section = z.infer<typeof SectionSchema>;
 export type SectionType = Section['type'];
 
+export const SECTION_LABELS: Record<SectionType, string> = {
+  HERO: 'Hero',
+  LEADERBOARD: 'Leaderboard',
+  REWARD_TIERS: 'Reward tiers',
+  COUNTDOWN: 'Countdown',
+  ENTRY_FORM: 'Entry form',
+};
+
 export const PageConfigSchema = z.object({
   sections: z.array(SectionSchema),
 });
 
 export type PageConfig = z.infer<typeof PageConfigSchema>;
+
+/** `PageConfigSchema` plus the always-present-entry-form invariant, enforced at save time. */
+export const PageConfigWithEntryFormSchema = PageConfigSchema.refine(
+  (config) => config.sections.some((section) => section.type === 'ENTRY_FORM'),
+  { message: 'pageConfig.sections must include an ENTRY_FORM section' }
+);
 
 /**
  * The layout every campaign gets when its stored `pageConfig` is null, in the
@@ -89,4 +103,33 @@ export function parsePageConfig(raw: unknown): PageConfig {
   }
 
   return parsed.data;
+}
+
+/**
+ * Shape of `Campaign.pageConfigDraft`: everything the page editor can change,
+ * bundled together so a single JSON column can stage all of it as one draft.
+ * Broader than `PageConfigSchema` alone — see design.md's Decisions for why
+ * `headline`/`description`/`endsAt` are included here even though they live
+ * on their own `Campaign` columns once published.
+ */
+export const PageDraftEnvelopeSchema = z
+  .object({
+    headline: z.string().nullable(),
+    description: z.string().nullable(),
+    endsAt: z.coerce.date().nullable(),
+    pageConfig: PageConfigWithEntryFormSchema,
+  })
+  .strict();
+
+export type PageDraftEnvelope = z.infer<typeof PageDraftEnvelopeSchema>;
+
+/**
+ * Normalizes a campaign's stored `pageConfigDraft`. Unlike `parsePageConfig`,
+ * there is no default envelope to fall back to: `null` or anything invalid
+ * simply means "no draft exists," which the editor must distinguish from "an
+ * empty draft."
+ */
+export function parseDraftEnvelope(raw: unknown): PageDraftEnvelope | null {
+  const parsed = PageDraftEnvelopeSchema.safeParse(raw);
+  return parsed.success ? parsed.data : null;
 }

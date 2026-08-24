@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
-import { parsePageConfig } from '@/lib/pageConfig';
+import { parsePageConfig, parseDraftEnvelope } from '@/lib/pageConfig';
 import { PageBuilderEditor } from './PageBuilderEditor';
 
 export default async function EditCampaignPagePage(props: { params: Promise<{ id: string }> }) {
@@ -28,17 +28,32 @@ export default async function EditCampaignPagePage(props: { params: Promise<{ id
   }
 
   const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+  const serverNowMs = Date.now();
+
+  const draft = parseDraftEnvelope(campaign.pageConfigDraft);
+  const initialContent = draft ?? {
+    headline: campaign.headline,
+    description: campaign.description,
+    endsAt: campaign.endsAt,
+    pageConfig: parsePageConfig(campaign.pageConfig),
+  };
 
   return (
     <PageBuilderEditor
+      // Remounts with fresh initial props after Publish/Discard bump updatedAt
+      // and the client calls router.refresh() — see design.md's Decisions.
+      key={campaign.updatedAt.toISOString()}
       campaignId={campaign.id}
+      campaignName={campaign.name}
       campaignSlug={campaign.slug}
       appUrl={appUrl}
-      initialPageConfig={parsePageConfig(campaign.pageConfig)}
-      initialHeadline={campaign.headline}
-      initialDescription={campaign.description}
+      initialPageConfig={initialContent.pageConfig}
+      initialHeadline={initialContent.headline}
+      initialDescription={initialContent.description}
       prizeDescription={campaign.prizeDescription}
-      initialEndsAt={campaign.endsAt ? campaign.endsAt.toISOString() : null}
+      initialEndsAt={initialContent.endsAt ? initialContent.endsAt.toISOString() : null}
+      initialHasDraft={campaign.pageConfigDraft !== null}
+      serverNowMs={serverNowMs}
       rewardTiers={campaign.rewardTiers}
       leaderboard={campaign.participants}
     />

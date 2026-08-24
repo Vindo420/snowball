@@ -3,7 +3,7 @@ import { signUp } from './helpers/auth';
 import { createCampaign, activateCampaign } from './helpers/campaign';
 import { uniqueTestUser, uniqueCampaignSlug } from './helpers/test-data';
 
-test('owner can edit a section, reorder sections, save, and see both changes on the public page', async ({
+test('owner can edit a section, reorder sections, and see both changes on the public page after publishing', async ({
   browser,
   registerCleanup,
 }) => {
@@ -23,11 +23,16 @@ test('owner can edit a section, reorder sections, save, and see both changes on 
   await page.locator('input[name="headline"]').fill(newHeadline);
 
   // Default order is Hero, Entry form, Leaderboard, Reward tiers — move
-  // Reward tiers up once so it now precedes Leaderboard.
-  await page.getByRole('button', { name: 'Move Reward tiers up' }).click();
+  // Reward tiers up once so it now precedes Leaderboard. The same control
+  // also exists on the canvas (Phase 3's hover controls), so scope to the
+  // sidebar's section list specifically.
+  await page.getByRole('list').getByRole('button', { name: 'Move Reward tiers up' }).click();
 
-  await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByText('Saved')).toBeVisible();
+  // Autosave is debounced; both edits land as a single draft before publishing.
+  await expect(page.getByText('Unpublished changes')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Publish' }).click();
+  await expect(page.getByText('All changes published')).toBeVisible();
 
   await context.close();
 

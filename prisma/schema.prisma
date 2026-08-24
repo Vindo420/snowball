@@ -68,6 +68,11 @@ model Campaign {
   // Kept as freeform JSON so the page builder can evolve without migrations.
   pageConfig        Json?
 
+  // Unpublished editor draft: { headline, description, endsAt, pageConfig }.
+  // Never read by the public page — only Publish copies this into the
+  // published fields above and clears it.
+  pageConfigDraft   Json?
+
   startsAt          DateTime?
   endsAt            DateTime?
 

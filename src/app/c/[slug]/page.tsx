@@ -1,3 +1,4 @@
+import { Suspense } from 'react';
 import { notFound } from 'next/navigation';
 import { db } from '@/lib/db';
 import { CampaignLanding } from '@/components/CampaignLanding';
@@ -10,6 +11,11 @@ import { CampaignLanding } from '@/components/CampaignLanding';
  * this full page. Building that embed script (public/embed.js) is a natural
  * next step once this core flow is solid.
  */
+
+// Always render fresh. The leaderboard changes every time someone enters,
+// so this page must never be served from a build-time cache.
+export const dynamic = 'force-dynamic';
+
 export default async function PublicCampaignPage({ params }: { params: { slug: string } }) {
   const campaign = await db.campaign.findUnique({
     where: { slug: params.slug },
@@ -25,16 +31,21 @@ export default async function PublicCampaignPage({ params }: { params: { slug: s
     notFound();
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  // Use || not ?? so that an empty-string env var also falls back.
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
   return (
-    <CampaignLanding
-      campaignSlug={campaign.slug}
-      headline={campaign.headline}
-      description={campaign.description}
-      prizeDescription={campaign.prizeDescription}
-      appUrl={appUrl}
-      leaderboard={campaign.participants}
-    />
+    // CampaignLanding calls useSearchParams() to read the ?ref= code, which
+    // Next.js requires to sit inside a Suspense boundary.
+    <Suspense fallback={<main className="px-6 py-16 text-center text-gray-500">Loading…</main>}>
+      <CampaignLanding
+        campaignSlug={campaign.slug}
+        headline={campaign.headline}
+        description={campaign.description}
+        prizeDescription={campaign.prizeDescription}
+        appUrl={appUrl}
+        leaderboard={campaign.participants}
+      />
+    </Suspense>
   );
 }

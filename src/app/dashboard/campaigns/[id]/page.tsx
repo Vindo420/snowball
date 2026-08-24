@@ -25,7 +25,7 @@ export default async function CampaignDetailPage({ params }: { params: { id: str
     return <main className="p-12 text-center text-gray-500">Campaign not found.</main>;
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
   return (
     <main className="mx-auto max-w-4xl space-y-8 px-6 py-12">

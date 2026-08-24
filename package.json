@@ -4,6 +4,7 @@
   "private": true,
   "description": "Open-source viral referral / giveaway marketing platform (Upviral-style), built with Next.js + Prisma.",
   "scripts": {
+    "postinstall": "prisma generate",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",

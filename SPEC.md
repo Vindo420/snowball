@@ -111,6 +111,30 @@ See `prisma/schema.prisma` for the authoritative version.
 - `PATCH /api/campaigns/:id` uses an allow-listed Zod schema. It previously
   accepted an arbitrary unvalidated body, which would have let an owner rewrite
   fields like `userId`.
+- **Campaign lifecycle controls**: a shared `CampaignStatusControl` in the page
+  editor's top bar and on the campaign detail page lets the owner activate,
+  pause, or end a campaign (`Campaign.status`). `DRAFT` and `PAUSED` campaigns
+  are not publicly reachable (404); a brand-new `DRAFT` campaign also shows a
+  prominent in-editor notice with an inline activate action, since otherwise
+  its page is invisible with no obvious explanation. `ENDED` is different from
+  both: its public page still renders, showing a final "giveaway has finished"
+  message and the final leaderboard rather than 404ing, since participants'
+  share links keep receiving real traffic after a campaign ends. Entries are
+  rejected server-side (`POST /api/referrals`, 403) for any non-`ACTIVE`
+  campaign, including `ENDED`.
+
+  **`Campaign.status` and `Campaign.pageConfigDraft` are two separate, easily
+  conflated concepts** — this has already caused confusion in practice, so to
+  be explicit: `status` governs whether the campaign is running *at all*
+  (`DRAFT`/`ACTIVE`/`PAUSED`/`ENDED`), changed via the lifecycle controls above
+  ("Activate campaign" / "Pause campaign" / "End campaign"). `pageConfigDraft`
+  governs unpublished edits to a *running* campaign's page *content* (which
+  sections it has, their copy), changed via the page editor's autosave and
+  promoted to the live page only by "Publish changes." A campaign can be
+  `ACTIVE` with an unpublished content draft sitting alongside it, or `DRAFT`
+  with its content already fully "published" (in the `pageConfigDraft` sense)
+  and simply not live yet because its `status` says so. Neither field affects
+  the other.
 - Deployed to Vercel, auto-deploying from `main`.
 
 ## 5. Known debt

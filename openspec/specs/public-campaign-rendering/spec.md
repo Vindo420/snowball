@@ -60,3 +60,51 @@ The system SHALL display a campaign's reward tiers to every visitor, and SHALL a
 #### Scenario: Progress visible after entering
 - **WHEN** a visitor has entered the giveaway
 - **THEN** the reward-tiers section also shows that visitor's own progress toward the tiers
+
+### Requirement: The public page never renders unpublished draft edits
+The system SHALL render the public campaign page exclusively from the campaign's published state and SHALL NOT read or render any unpublished draft, regardless of whether a draft exists.
+
+#### Scenario: A pending draft does not affect the public page
+- **WHEN** a campaign has an unpublished draft that differs from its published state
+- **THEN** the public page renders the published state only
+
+#### Scenario: Publishing is required for the public page to change
+- **WHEN** the owner has edited a draft but not yet published it
+- **THEN** the public page shows no evidence of the draft's edits
+
+### Requirement: Draft and paused campaigns are not publicly reachable
+The system SHALL respond not-found for the public page of a campaign whose status is `DRAFT` or `PAUSED`.
+
+#### Scenario: A draft campaign's public page is not found
+- **WHEN** a visitor requests the public page of a campaign whose status is `DRAFT`
+- **THEN** the system responds not-found
+
+#### Scenario: A paused campaign's public page is not found
+- **WHEN** a visitor requests the public page of a campaign whose status is `PAUSED`
+- **THEN** the system responds not-found
+
+#### Scenario: An active campaign's public page renders
+- **WHEN** a visitor requests the public page of a campaign whose status is `ACTIVE`
+- **THEN** the system renders the page normally
+
+### Requirement: An ended campaign shows a final, read-only state instead of not-found
+The system SHALL render the public page of an `ENDED` campaign successfully rather than responding not-found, showing a clear message that the giveaway has finished together with the campaign's final leaderboard, and SHALL NOT present a working entry form on it.
+
+#### Scenario: An ended campaign's page renders successfully with the final results
+- **WHEN** a visitor requests the public page of a campaign whose status is `ENDED`
+- **THEN** the system responds successfully, showing a message that the giveaway has finished and the campaign's final leaderboard
+
+#### Scenario: An ended campaign's page does not offer an entry form
+- **WHEN** a visitor views the public page of a campaign whose status is `ENDED`
+- **THEN** the entry form is hidden or disabled rather than shown as a working form
+
+### Requirement: New entries are only accepted for active campaigns
+The system SHALL reject a request to enter a giveaway when the campaign's status is not `ACTIVE`, and SHALL NOT create a participant record for it, enforced server-side regardless of what the requesting client shows.
+
+#### Scenario: An entry submitted to an ended campaign is rejected
+- **WHEN** a request to enter is made for a campaign whose status is `ENDED`
+- **THEN** the system rejects the request and creates no participant record
+
+#### Scenario: An entry submitted to an active campaign succeeds
+- **WHEN** a request to enter is made for a campaign whose status is `ACTIVE`
+- **THEN** the system creates the participant record as normal

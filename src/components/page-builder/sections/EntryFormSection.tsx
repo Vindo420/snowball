@@ -9,6 +9,7 @@ export function EntryFormSection({
   myEntry,
   onEntered,
   preview,
+  ended,
 }: {
   campaignSlug: string;
   headline: string | null;
@@ -18,7 +19,17 @@ export function EntryFormSection({
   myEntry: EnteredParticipant | null;
   onEntered: (participant: EnteredParticipant) => void;
   preview?: boolean;
+  /** Campaign has ENDED — checked before `myEntry`: no form, no reveal, just the finished message. */
+  ended?: boolean;
 }) {
+  if (ended) {
+    return (
+      <div className="rounded-lg border border-gray-200 bg-white p-6">
+        <p className="font-semibold">This giveaway has finished.</p>
+      </div>
+    );
+  }
+
   if (myEntry) {
     const myShareUrl = `${appUrl}/c/${campaignSlug}?ref=${myEntry.refCode}`;
     return (

@@ -3,9 +3,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { PageConfig, Section, SectionType } from '@/lib/pageConfig';
+import type { CampaignStatus } from '@/components/CampaignStatusControl';
 import { EditorTopBar, type SaveState } from './EditorTopBar';
 import { SectionSidebar } from './SectionSidebar';
 import { EditorCanvas } from './EditorCanvas';
+import { DraftStatusNotice } from './DraftStatusNotice';
 
 type RewardTier = { id: string; name: string; referralsRequired: number; rewardDescription: string };
 type LeaderboardEntry = { id: string; name: string | null; email: string; referralCount: number; points: number };
@@ -35,6 +37,7 @@ export function PageBuilderEditor({
   prizeDescription,
   initialEndsAt,
   initialHasDraft,
+  status,
   serverNowMs,
   rewardTiers,
   leaderboard,
@@ -49,6 +52,7 @@ export function PageBuilderEditor({
   prizeDescription: string | null;
   initialEndsAt: string | null;
   initialHasDraft: boolean;
+  status: CampaignStatus;
   serverNowMs: number;
   rewardTiers: RewardTier[];
   leaderboard: LeaderboardEntry[];
@@ -200,6 +204,8 @@ export function PageBuilderEditor({
       <EditorTopBar
         campaignName={campaignName}
         campaignId={campaignId}
+        status={status}
+        onStatusChanged={() => router.refresh()}
         device={device}
         onDeviceChange={setDevice}
         saveState={saveState}
@@ -209,6 +215,10 @@ export function PageBuilderEditor({
         publishing={publishing}
         publishError={publishError}
       />
+
+      {status === 'DRAFT' && (
+        <DraftStatusNotice campaignId={campaignId} onActivated={() => router.refresh()} />
+      )}
 
       <div className="flex flex-1 overflow-hidden">
         <div className="w-80 shrink-0">

@@ -1,12 +1,15 @@
 'use client';
 
 import Link from 'next/link';
+import { CampaignStatusControl, type CampaignStatus } from '@/components/CampaignStatusControl';
 
 export type SaveState = 'idle' | 'saving' | 'unpublished' | 'failed';
 
 export function EditorTopBar({
   campaignName,
   campaignId,
+  status,
+  onStatusChanged,
   device,
   onDeviceChange,
   saveState,
@@ -18,6 +21,8 @@ export function EditorTopBar({
 }: {
   campaignName: string;
   campaignId: string;
+  status: CampaignStatus;
+  onStatusChanged: () => void;
   device: 'desktop' | 'mobile';
   onDeviceChange: (device: 'desktop' | 'mobile') => void;
   saveState: SaveState;
@@ -32,11 +37,15 @@ export function EditorTopBar({
   return (
     <div className="border-b border-gray-200 bg-white px-6 py-3">
       <div className="flex items-center justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-3">
+        <div className="flex min-w-0 items-center gap-4">
           <Link href={`/dashboard/campaigns/${campaignId}`} className="text-sm text-gray-500 hover:underline">
             ← Dashboard
           </Link>
           <h1 className="truncate text-lg font-semibold">{campaignName}</h1>
+          {/* Campaign.status (is this campaign running at all) — a separate
+              concept from the page-content Publish-changes/Discard controls
+              on the right, which govern pageConfigDraft. */}
+          <CampaignStatusControl campaignId={campaignId} status={status} onChanged={onStatusChanged} />
         </div>
 
         <div className="flex items-center gap-4">
@@ -74,7 +83,7 @@ export function EditorTopBar({
             disabled={publishing || !hasDraft}
             className="rounded-lg bg-brand-600 px-4 py-2 text-sm font-medium text-white hover:bg-brand-700 disabled:opacity-50"
           >
-            {publishing ? 'Publishing…' : 'Publish'}
+            {publishing ? 'Publishing…' : 'Publish changes'}
           </button>
         </div>
       </div>

@@ -27,6 +27,7 @@ export function PageRenderer({
   rewardTiers,
   leaderboard,
   preview,
+  ended,
   editable,
   selectedSectionId,
   onSelectSection,
@@ -46,6 +47,8 @@ export function PageRenderer({
   leaderboard: LeaderboardEntry[];
   /** When true, no section's interactive controls can create real data. */
   preview?: boolean;
+  /** Campaign has ENDED — the entry-form section shows a finished message instead of the form. */
+  ended?: boolean;
   /**
    * When true (canvas usage only), wraps each section in selection/hover
    * chrome. Off by default — the public page and any other usage renders
@@ -107,6 +110,7 @@ export function PageRenderer({
                 myEntry={myEntry}
                 onEntered={setMyEntry}
                 preview={preview}
+                ended={ended}
               />
             );
             break;

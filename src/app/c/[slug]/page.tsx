@@ -30,7 +30,11 @@ export default async function PublicCampaignPage(props: { params: Promise<{ slug
     },
   });
 
-  if (!campaign || campaign.status === 'DRAFT') {
+  // Only ACTIVE campaigns render normally. ENDED renders too (a final,
+  // read-only state — see PageRenderer's `ended` prop), since participants'
+  // share links keep receiving real traffic after a campaign ends and a 404
+  // would waste it. DRAFT and PAUSED are not publicly reachable.
+  if (!campaign || campaign.status === 'DRAFT' || campaign.status === 'PAUSED') {
     notFound();
   }
 
@@ -53,6 +57,7 @@ export default async function PublicCampaignPage(props: { params: Promise<{ slug
         serverNowMs={Date.now()}
         rewardTiers={campaign.rewardTiers}
         leaderboard={campaign.participants}
+        ended={campaign.status === 'ENDED'}
       />
     </Suspense>
   );

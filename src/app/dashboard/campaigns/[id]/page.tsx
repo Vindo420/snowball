@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { db } from '@/lib/db';
 import { Leaderboard } from '@/components/Leaderboard';
+import { CampaignStatusControlWithRefresh } from './CampaignStatusControlWithRefresh';
 
 export default async function CampaignDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
@@ -35,11 +36,11 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
         <div>
           <h1 className="text-2xl font-bold">{campaign.name}</h1>
           <p className="text-gray-500">
-            {campaign.status} &middot; {campaign.type} &middot;{' '}
-            <a className="underline" href={`${appUrl}/c/${campaign.slug}`} target="_blank" rel="noreferrer">
-              {appUrl}/c/{campaign.slug}
-            </a>
+            {campaign.type} &middot; <PublicUrlDisplay appUrl={appUrl} slug={campaign.slug} status={campaign.status} />
           </p>
+          <div className="mt-2">
+            <CampaignStatusControlWithRefresh campaignId={campaign.id} status={campaign.status} />
+          </div>
         </div>
         <Link
           href={`/dashboard/campaigns/${campaign.id}/edit`}
@@ -84,5 +85,36 @@ export default async function CampaignDetailPage(props: { params: Promise<{ id: 
         <Leaderboard entries={campaign.participants} />
       </section>
     </main>
+  );
+}
+
+/**
+ * Reflects actual reachability, not just status: DRAFT/PAUSED 404, so the URL
+ * is shown as plain text, clearly marked not live — never as a working link
+ * that would disappoint. ENDED still renders (a final read-only state), so
+ * its URL stays a working link, just marked as ended.
+ */
+function PublicUrlDisplay({ appUrl, slug, status }: { appUrl: string; slug: string; status: string }) {
+  const url = `${appUrl}/c/${slug}`;
+
+  if (status === 'DRAFT' || status === 'PAUSED') {
+    return <span>{url} (not live)</span>;
+  }
+
+  if (status === 'ENDED') {
+    return (
+      <>
+        <a className="underline" href={url} target="_blank" rel="noreferrer">
+          {url}
+        </a>{' '}
+        (ended)
+      </>
+    );
+  }
+
+  return (
+    <a className="underline" href={url} target="_blank" rel="noreferrer">
+      {url}
+    </a>
   );
 }

@@ -53,6 +53,7 @@ export default async function EditCampaignPagePage(props: { params: Promise<{ id
       prizeDescription={campaign.prizeDescription}
       initialEndsAt={initialContent.endsAt ? initialContent.endsAt.toISOString() : null}
       initialHasDraft={campaign.pageConfigDraft !== null}
+      status={campaign.status}
       serverNowMs={serverNowMs}
       rewardTiers={campaign.rewardTiers}
       leaderboard={campaign.participants}

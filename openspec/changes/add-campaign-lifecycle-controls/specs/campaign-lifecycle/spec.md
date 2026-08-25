@@ -41,13 +41,17 @@ The system SHALL show the owner a prominent notice, while editing a `DRAFT` camp
 - **WHEN** the owner opens the editor for a campaign that is not `DRAFT`
 - **THEN** the notice does not appear
 
-### Requirement: The dashboard never presents a non-live campaign's public URL as a working link
-The system SHALL NOT present a campaign's public URL as a normal, working link anywhere in the dashboard while that campaign's status is not `ACTIVE`, since visiting it would 404.
+### Requirement: The dashboard presents each campaign's public URL according to whether it's actually reachable
+The system SHALL NOT present a campaign's public URL as a normal, working link anywhere in the dashboard while visiting it would 404, and SHALL present it as a working link, clearly marked as ended, once the campaign has ended.
 
-#### Scenario: Draft, paused, or ended campaigns don't show a live link
-- **WHEN** the owner views a campaign that is `DRAFT`, `PAUSED`, or `ENDED`
+#### Scenario: Draft or paused campaigns don't show a live link
+- **WHEN** the owner views a campaign that is `DRAFT` or `PAUSED`
 - **THEN** its public URL is either hidden or clearly marked as not currently live, rather than shown as an ordinary working link
 
 #### Scenario: Active campaigns show a normal link
 - **WHEN** the owner views a campaign that is `ACTIVE`
 - **THEN** its public URL is shown as a normal working link
+
+#### Scenario: Ended campaigns show a working link marked as ended
+- **WHEN** the owner views a campaign that is `ENDED`
+- **THEN** its public URL is shown as a working link, clearly marked as ended, since the page still renders a final state rather than 404ing

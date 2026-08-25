@@ -4,14 +4,18 @@
 - [ ] 1.2 Wire `CampaignStatusControl` into the editor's top bar (`EditorTopBar.tsx`), positioned visually separate from the Publish-changes/Discard/device-toggle cluster (e.g., near the campaign name); relabel the existing page-content "Publish" button to "Publish changes"
 - [ ] 1.3 Add a full-width notice banner in the editor, shown only when the campaign's status is `DRAFT`, stating that visitors currently see a not-found page, with an inline "Activate campaign" action wired to the same status-change logic
 - [ ] 1.4 Wire `CampaignStatusControl` into the campaign detail page (`src/app/dashboard/campaigns/[id]/page.tsx`), replacing the current plain-text `{campaign.status}` display
-- [ ] 1.5 Update the detail page's public-URL rendering: render it as a normal clickable link only when `status === 'ACTIVE'`; for `DRAFT`/`PAUSED`/`ENDED`, render the URL as plain (non-link) text with a "(not live)" annotation instead
-- [ ] 1.6 Change `src/app/c/[slug]/page.tsx`'s not-found condition from `campaign.status === 'DRAFT'` to `campaign.status !== 'ACTIVE'`; verify with a direct script/request that `PAUSED` and `ENDED` campaigns now 404 and `ACTIVE` still renders
-- [ ] 1.7 Add a new E2E test: a `DRAFT` campaign's public page returns not-found
-- [ ] 1.8 Add a new E2E test: activating a campaign through the dashboard UI (not a direct API call) makes its public page render
-- [ ] 1.9 Add a new E2E test: pausing an active campaign through the UI returns its public page to not-found
-- [ ] 1.10 Add a new E2E test: ending a campaign through the UI returns its public page to not-found
-- [ ] 1.11 Add a new E2E test: a non-owner cannot change another user's campaign status via `PATCH /api/campaigns/:id` (expect the existing ownership-check behavior — not-found, no change)
-- [ ] 1.12 Checkpoint: run `npm run typecheck`, `npm run build`, and `npm run test:e2e` and confirm the existing 16 flows plus the 5 new flows (21 total) all pass
-- [ ] 1.13 Commit all changes from this feature and push to `main`
-- [ ] 1.14 Confirm the Vercel deployment for this push succeeds; if it fails, fix the underlying cause and re-push
-- [ ] 1.15 Manually confirm, entirely through the production UI (no direct database or API step): create a new campaign, activate it, and confirm its public page renders at `https://snowball-blue.vercel.app/c/<slug>`
+- [ ] 1.5 Update the detail page's public-URL rendering: render it as a normal clickable link, no annotation, when `status === 'ACTIVE'`; as a normal clickable link with a "(ended)" annotation when `status === 'ENDED'`; as plain (non-link) text with a "(not live)" annotation for `DRAFT`/`PAUSED`
+- [ ] 1.6 Add an `ended?: boolean` prop to `EntryFormSection` (`src/components/page-builder/sections/EntryFormSection.tsx`), checked before `myEntry`: when true, render a static "This giveaway has finished" message and nothing else (no form, no post-entry reveal)
+- [ ] 1.7 Change `src/app/c/[slug]/page.tsx` to branch three ways on status: `ACTIVE` renders normally; `ENDED` renders the same page with `ended` passed through to the entry-form section; `DRAFT` or `PAUSED` still call `notFound()`; verify with a direct request that `PAUSED` still 404s, `ENDED` returns 200 with the finished message and leaderboard visible, and `ACTIVE` is unchanged
+- [ ] 1.8 Verify (direct request, not just UI) that `POST /api/referrals` still rejects an entry for an `ENDED` campaign and creates no `Participant` row — this enforcement already exists in the route; confirm it explicitly rather than assuming
+- [ ] 1.9 Add a new E2E test: a `DRAFT` campaign's public page returns not-found
+- [ ] 1.10 Add a new E2E test: activating a campaign through the dashboard UI (not a direct API call) makes its public page render
+- [ ] 1.11 Add a new E2E test: pausing an active campaign through the UI returns its public page to not-found
+- [ ] 1.12 Add a new E2E test: ending a campaign through the UI makes its public page return a successful response containing the finished message and the final leaderboard, with no working entry form
+- [ ] 1.13 Add a new E2E test: submitting an entry to an `ENDED` campaign (direct request to `POST /api/referrals`, bypassing the UI) is rejected and creates no `Participant` row
+- [ ] 1.14 Add a new E2E test: a non-owner cannot change another user's campaign status via `PATCH /api/campaigns/:id` (expect the existing ownership-check behavior — not-found, no change)
+- [ ] 1.15 Checkpoint: run `npm run typecheck`, `npm run build`, and `npm run test:e2e` and confirm the existing 16 flows plus the 6 new flows (22 total) all pass
+- [ ] 1.16 Commit all changes from this feature and push to `main`
+- [ ] 1.17 Confirm the Vercel deployment for this push succeeds; if it fails, fix the underlying cause and re-push
+- [ ] 1.18 Manually confirm, entirely through the production UI (no direct database or API step): create a new campaign, activate it, and confirm its public page renders at `https://snowball-blue.vercel.app/c/<slug>`
+- [ ] 1.19 Once the above is verified, update `SPEC.md`: record campaign lifecycle controls (activate/pause/end) under what works today, and add an explicit note documenting the distinction between `Campaign.status` (whether the campaign runs at all) and `pageConfigDraft` (unpublished page-content edits), since that distinction has already caused confusion in practice
